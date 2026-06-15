@@ -13,3 +13,16 @@ Official installable builds of the [Fabroq](https://fabroq.com) app. Latest rele
 Builds are not yet code-signed: on Windows click **More info → Run anyway** if SmartScreen warns; on macOS **right-click → Open**.
 
 > The web app is always available at https://fabroq.com — no install required.
+
+## Run it yourself (self-host the engine)
+
+The `curl | sh` / `irm | iex` install scripts served at **https://get.fabroq.com** live in [`install/`](install/) (consolidated here from the former `fabroq-install` repo):
+
+```sh
+# macOS / Linux
+curl -fsSL https://get.fabroq.com | sh
+# Windows (PowerShell)
+irm https://get.fabroq.com/install.ps1 | iex
+```
+
+See [`install/README.md`](install/README.md) for what gets installed and the engine-source override.
