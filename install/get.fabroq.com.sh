@@ -159,8 +159,10 @@ VPY="$VENV/bin/python"
 say "Installing the Fabroq engine + CLI (isolated venv)…"
 "$VPY" -m pip install --quiet --upgrade pip >/dev/null 2>&1 || true
 # Install the engine package with the gateway-host extra (fastapi/uvicorn/httpx).
-"$VPY" -m pip install --quiet "$INSTALL_DIR"'[host]' >/dev/null 2>&1 \
-  || "$VPY" -m pip install --quiet -e "$INSTALL_DIR"'[host]' >/dev/null 2>&1 \
+# Use the "." path form from inside the dir: modern pip (>=23.1) rejects an
+# absolute path with extras ("<abspath>[host]" -> "Expected package name").
+( cd "$INSTALL_DIR" && "$VPY" -m pip install --quiet ".[host]" ) >/dev/null 2>&1 \
+  || ( cd "$INSTALL_DIR" && "$VPY" -m pip install --quiet -e ".[host]" ) >/dev/null 2>&1 \
   || die "pip install failed"
 ok "engine + CLI installed"
 
@@ -176,8 +178,9 @@ else
   mkdir -p "$GW_DIR"
   ( cd "$GW_DIR" && npm init -y >/dev/null 2>&1 && npm install "$OPENCLAW_PKG" >/dev/null 2>&1 ) \
     || die "could not install the gateway component ($OPENCLAW_PKG)"
-  # Point the CLI at the vendored gateway entrypoint.
-  GW_ENTRY="$GW_DIR/node_modules/$OPENCLAW_PKG/openclaw.mjs"
+  # Point the CLI at the vendored gateway entrypoint. npm installs under the
+  # package NAME, not name@version — strip the @version off OPENCLAW_PKG.
+  GW_ENTRY="$GW_DIR/node_modules/${OPENCLAW_PKG%@*}/openclaw.mjs"
   [ -f "$GW_ENTRY" ] || die "gateway entry not found at $GW_ENTRY"
   mkdir -p "$FABROQ_PREFIX/openclaw"
   ln -sf "$GW_ENTRY" "$FABROQ_PREFIX/openclaw/openclaw.mjs"

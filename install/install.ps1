@@ -140,9 +140,16 @@ if (-not (Test-Path (Join-Path $Venv 'Scripts\python.exe'))) {
 $vpy = Join-Path $Venv 'Scripts\python.exe'
 Say 'Installing the Fabroq engine + CLI (isolated venv)...'
 & $vpy -m pip install --quiet --upgrade pip 2>$null
-$installed = $false
-try { & $vpy -m pip install --quiet ("$AppDir" + '[host]') 2>$null; $installed = $true } catch { }
-if (-not $installed) { try { & $vpy -m pip install --quiet -e ("$AppDir" + '[host]') 2>$null; $installed = $true } catch { } }
+# Use the "." path form from inside the dir: modern pip (>=23.1) rejects an
+# absolute path with extras ("<abspath>[host]" -> "Expected package name").
+# Also check $LASTEXITCODE — a native exe's nonzero exit does NOT throw, so the
+# old try/catch reported failed installs as success.
+Push-Location $AppDir
+try {
+  & $vpy -m pip install --quiet '.[host]' 2>$null
+  $installed = ($LASTEXITCODE -eq 0)
+  if (-not $installed) { & $vpy -m pip install --quiet -e '.[host]' 2>$null; $installed = ($LASTEXITCODE -eq 0) }
+} finally { Pop-Location }
 if (-not $installed) { Die 'pip install failed' }
 OK 'engine + CLI installed'
 
@@ -161,7 +168,9 @@ if ($globalOk -and (Have openclaw)) {
     npm init -y 2>$null | Out-Null
     npm install $OcPkg 2>$null | Out-Null
   } finally { Pop-Location }
-  $gwEntry = Join-Path $gwDir ("node_modules\$OcPkg\openclaw.mjs")
+  # npm installs under the package NAME, not name@version — strip the @version.
+  $ocName  = ($OcPkg -replace '@[^@/]*$', '')
+  $gwEntry = Join-Path $gwDir ("node_modules\$ocName\openclaw.mjs")
   if (-not (Test-Path $gwEntry)) { Die "could not install the gateway component ($OcPkg)" }
   New-Item -ItemType Directory -Force -Path (Join-Path $Prefix 'openclaw') | Out-Null
   Copy-Item -Force $gwEntry (Join-Path $Prefix 'openclaw\openclaw.mjs')
