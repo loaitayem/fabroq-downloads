@@ -14,8 +14,9 @@ $ErrorActionPreference = 'Stop'
 $Prefix      = if ($env:FABROQ_PREFIX) { $env:FABROQ_PREFIX } else { Join-Path $HOME '.fabroq' }
 $BinDir      = Join-Path $Prefix 'bin'
 # The launcher this installer drops onto your PATH. Overridable for testing against a local copy
-# (e.g. $env:FABROQ_LAUNCHER_URL='C:\path\to\fabroq.ps1' or a staging URL).
-$LauncherUrl = if ($env:FABROQ_LAUNCHER_URL) { $env:FABROQ_LAUNCHER_URL } else { 'https://get.fabroq.com/fabroq.ps1' }
+# (e.g. $env:FABROQ_LAUNCHER_URL='C:\path\to\fabroq.ps1' or a staging URL). Default = the PUBLIC raw
+# source: the get.fabroq.com edge only maps / and /install.ps1, so fetch the launcher from raw directly.
+$LauncherUrl = if ($env:FABROQ_LAUNCHER_URL) { $env:FABROQ_LAUNCHER_URL } else { 'https://raw.githubusercontent.com/loaitayem/fabroq-downloads/main/install/fabroq.ps1' }
 
 function Say  ($m) { Write-Host $m }
 function OK   ($m) { Write-Host "  [ok]   $m" -ForegroundColor Green }

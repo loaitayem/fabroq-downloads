@@ -16,8 +16,9 @@ set -eu
 FABROQ_PREFIX="${FABROQ_PREFIX:-$HOME/.fabroq}"
 BIN_DIR="$FABROQ_PREFIX/bin"
 # The launcher this installer drops onto your PATH. Overridable for testing against a local copy
-# (FABROQ_LAUNCHER_URL=file:///path/to/fabroq.sh or a staging URL).
-LAUNCHER_URL="${FABROQ_LAUNCHER_URL:-https://get.fabroq.com/fabroq.sh}"
+# (FABROQ_LAUNCHER_URL=file:///path/to/fabroq.sh or a staging URL). Default = the PUBLIC raw source:
+# the get.fabroq.com edge only maps / and /install.ps1, so the launcher is fetched from raw directly.
+LAUNCHER_URL="${FABROQ_LAUNCHER_URL:-https://raw.githubusercontent.com/loaitayem/fabroq-downloads/main/install/fabroq.sh}"
 
 say()  { printf '%s\n' "$*"; }
 ok()   { printf '  \033[32m✓\033[0m %s\n' "$*"; }
